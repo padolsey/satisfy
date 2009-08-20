@@ -16,7 +16,13 @@
         
         <script src="satisfy.jquery.js"></script>
         <script>
+        
+            /* TESTING TABLE */
+            jQuery('table tr:5 td[innerHTML="aaa"]:3').satisfy().appendTo('body');
+            
+            /* TESTING <UL> */
             jQuery('div:3 ul:2 li[innerHTML="List item"]:3').satisfy().appendTo('body');
+            
         </script>
         
     </body>

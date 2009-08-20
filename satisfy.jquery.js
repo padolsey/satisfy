@@ -80,7 +80,8 @@
             }
             
             cloneN = nRegex.test(m[1]) ? +m[1].match(nRegex)[1] : 1;
-            parent = $(parent).append(build(m[1], cloneN)).children();
+	    
+            parent = $(parent).append(build(m[1], cloneN)).find(m[1]);
                 
 	}
         
