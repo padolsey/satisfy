@@ -28,6 +28,8 @@
                 $(node).attr( match[1], match[4] );
             }
         };
+	
+    exprMatches.ATTR = RegExp( exprMatches.ATTR.source, 'g' );
     
     function build(part, n) {
         
@@ -37,10 +39,17 @@
         
         for (i in portionDealer) {
             
+	    if (exprMatches[i].global) {
+		while ( (match = exprMatches[i].exec(part)) !== null ) {
+		    portionDealer[i]( match, node );
+		}
+		continue;
+	    }
+	    
             match = exprMatches[i].exec(part);
             
             if (match) {
-                portionDealer[i]( exprMatches[i].exec(part), node );
+                portionDealer[i]( match, node );
             }
             
         }
