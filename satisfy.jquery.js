@@ -7,6 +7,9 @@
  *    - http://www.gnu.org/copyleft/gpl.html
  * -------------------------------------------------------
  * Version: 0.1
+ * -------------------------------------------------------
+ * "chunker" regex is Copyright (c) John Resig,
+ * from the Sizzle Selector Engine.
  */
 
 (function($){
