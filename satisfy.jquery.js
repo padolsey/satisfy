@@ -78,11 +78,18 @@
             if (/^[>~+]$/.test(m[1])) {
                 continue;
             }
-            
+	    
             cloneN = nRegex.test(m[1]) ? +m[1].match(nRegex)[1] : 1;
 	    
-            parent = $(parent).append(build(m[1], cloneN)).find(m[1]);
-                
+            parent = $(parent).append(build(m[1], cloneN)).find(
+		
+		/* We only need the tag.
+		   We could use children() for this but it wouldn't
+		   work with "table tr td" type selectors
+		   (because a tbody is generated) */
+		
+		( exprMatches.TAG.exec(m[1]), [,'*'] )[1]
+	    );
 	}
         
         return $(wrap).children();
