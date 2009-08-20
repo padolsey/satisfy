@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            
+            <title>jQuery.fn.satisfy demo</title>
+            
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.js"></script>
+            
+            <style type="text/css">
+                div { background: #EEE; padding: 10px; margin-bottom: 10px; border: 1px solid #000; }
+                ul { background: #333; color: #FFF; margin: 0; padding: .8em 0 .8em 2em; }
+            </style>
+    </head>
+    <body>
+        
+        <script src="satisfy.jquery.js"></script>
+        <script>
+            jQuery('div:3 ul:2 li[innerHTML="List item"]:3').satisfy().appendTo('body');
+        </script>
+        
+    </body>
+</html>
