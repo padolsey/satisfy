@@ -1,11 +1,14 @@
-jQuery.fn.satisfy
+Satisfy that selector!
 --
 
-***Satisfy*** is a development-only jQuery plugin that you can use to quickly generate HTML for testing/debugging. The idea is that you provide a CSS selector and then the plugin will "satisfy" it by generating an HTML structure in accordance with that selector.
+***Satisfy*** is a development-only <del>jQuery plugin</del>**\*** that you can use to quickly generate HTML for testing/debugging. The idea is that you provide a CSS selector and then the plugin will "satisfy" it by generating an HTML structure in accordance with that selector.
+
+**\*** - Version 0.2 has no dependencies. If jQuery is laoded then it will be available as a jQuery plugin (like before) otherwise it will work under the `satisfy()` name - this function returns an array of DOM elements.
 
 For example:
 
-    jQuery('div a').satisfy();
+    jQuery('div a').satisfy(); // jQuery
+    satisfy('div a'); // sans-jQuery
 
 This would return the following HTML structure:
 
