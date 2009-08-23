@@ -1,22 +1,27 @@
 /**
- * jQuery.fn.satisfy - made to satisfy CSS selectors
+ * Satisfy - made to satisfy CSS selectors
  * Copyright (c) 2009 James Padolsey
  * -------------------------------------------------------
  * Dual licensed under the MIT and GPL licenses.
  *    - http://www.opensource.org/licenses/mit-license.php
  *    - http://www.gnu.org/copyleft/gpl.html
  * -------------------------------------------------------
- * Version: 0.1
+ * Version: 0.2
  * -------------------------------------------------------
- * "chunker" regex is Copyright (c) John Resig,
+ * (most) Regular Expressions are Copyright (c) John Resig,
  * from the Sizzle Selector Engine.
  */
 
-(function($){
+var satisfy = (function(){
     
     var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^[\]]*\]|['"][^'"]*['"]|[^[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?/g,
-        exprMatches = jQuery.expr.match,
-        nRegex = /\:(\d+)$/,
+        exprMatches = {
+            ID: /#((?:[\w\u00c0-\uFFFF_-]|\\.)+)/,
+            CLASS: /\.((?:[\w\u00c0-\uFFFF_-]|\\.)+)/,
+            NAME: /\[name=['"]*((?:[\w\u00c0-\uFFFF_-]|\\.)+)['"]*\]/,
+            ATTR: /\[\s*((?:[\w\u00c0-\uFFFF_-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/g,
+            TAG: /^((?:[\w\u00c0-\uFFFF\*_-]|\\.)+)/
+        },
         portionDealer = {
             ID: function(match, node) {
                 node.id = match[1];
@@ -28,17 +33,19 @@
                 node.name = match[1];
             },
             ATTR: function(match, node) {
-                $(node).attr( match[1], match[4] );
+                if ( 'innerHTML' === match[1] ) {
+                    node[match[1]] = match[4];
+                } else {
+                    node.setAttribute( match[1], match[4] );
+                }
             }
         };
-	
-    exprMatches.ATTR = RegExp( exprMatches.ATTR.source, 'g' );
     
-    function build(part, n) {
+    function create(part, n) {
         
         var tag = exprMatches.TAG.exec(part),
             node = document.createElement( tag && tag[1] !== '*' ? tag[1] : 'div' ),
-            match, i, temp = $('<div/>');
+            match, i, temp = document.createElement('div');
         
         for (i in portionDealer) {
             
@@ -58,42 +65,94 @@
         }
         
         while (n--) {
-            temp.append( node.cloneNode(true) );
+            temp.appendChild( node.cloneNode(true) );
         }
         
-        return temp.children().clone();
+        return clone(temp.childNodes); // clone?
         
     }
     
-    $.fn.satisfy = function() {
+    function clone(nodes) {
         
-        var parts = [],
-            selector = this.selector,
-            wrap = $('<div/>'),
-            parent = wrap,
-            cloneN = 1;
+        var ret = [],
+            len = nodes.length,
+            i = 0;
+            
+        for ( ; i < len; ++i ) {
+            ret[i] = nodes[i].cloneNode(true);
+        }
+        
+        return ret;
+    }
+    
+    function multiAppend(parents, children) {
+        
+        var pLen = parents.length,
+            cLen = children.length,
+            pIndex = 0,
+            cIndex = 0,
+            frag = document.createDocumentFragment(),
+            clonedChildCollection = [],
+            ccc = 0,
+            parent;
+        
+        for ( ; pIndex < pLen; ++pIndex ) {
+            
+            parent = parents[pIndex];
+            
+            if (parent.nodeName.toLowerCase() === 'table') {
+                /* IE requires table to have tbody */
+                parent.appendChild(parent = document.createElement('tbody'));
+            }
+            
+            for ( cIndex = 0; cIndex < cLen; ++cIndex ) {
+                parent.appendChild(
+                    clonedChildCollection[ccc++] = children[cIndex].cloneNode(true)
+                );
+            }
+            
+        }
+        
+        return clonedChildCollection;
+        
+    }
+    
+    function satisfy(selector) {
+        
+        var selectorParts = [],
+            elWrapper = document.createElement('div'),
+            curParents = [elWrapper],
+            curChilren = [],
+            curSelector,
+            nClones = 1;
         
 	while ( (m = chunker.exec(selector)) !== null ) {
             
-            if (/^[>~+]$/.test(m[1])) {
+            curSelector = m[1];
+            
+            if (/^[>~+]$/.test(curSelector)) {
                 continue;
             }
 	    
-            cloneN = nRegex.test(m[1]) ? +m[1].match(nRegex)[1] : 1;
-	    
-            parent = $(parent).append(build(m[1], cloneN)).find(
-		
-		/* We only need the tag.
-		   We could use children() for this but it wouldn't
-		   work with "table tr td" type selectors
-		   (because a tbody is generated) */
-		
-		( exprMatches.TAG.exec(m[1]), [,'*'] )[1]
-	    );
+            nClones = /\:(\d+)$/.test(curSelector) ? +curSelector.match(/\:(\d+)$/)[1] : nClones;
+            
+            curParents = multiAppend(
+                curParents,
+                curChildren = create(curSelector, nClones)
+            );
+            
 	}
         
-        return $(wrap).children();
+        return elWrapper.childNodes;
         
     };
     
-})(jQuery);
+    if (window.jQuery !== undefined && jQuery.fn) {
+        jQuery.fn.satisfy = function() {
+            return $(satisfy(this.selector));
+        };
+    }
+    
+    return satisfy;
+    
+})();

@@ -23,6 +23,9 @@
             /* TESTING <UL> */
             jQuery('div:3 ul:2 li[innerHTML="List item"]:3').satisfy().appendTo('body');
             
+            /* WITHOUT JQUERY */
+            document.body.appendChild( satisfy('div em strong[innerHTML="Sans-jQuery!!!"]')[0] );
+            
         </script>
         
     </body>
