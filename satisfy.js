@@ -48,19 +48,23 @@ var satisfy = (function(){
             match, i, temp = document.createElement('div');
         
         for (i in portionDealer) {
+	    
+	    if (!portionDealer.hasOwnProperty || portionDealer.hasOwnProperty(i)) {
             
-	    if (exprMatches[i].global) {
-		while ( (match = exprMatches[i].exec(part)) !== null ) {
+		if (exprMatches[i].global) {
+		    while ( (match = exprMatches[i].exec(part)) !== null ) {
+			portionDealer[i]( match, node );
+		    }
+		    continue;
+		}
+		
+		match = exprMatches[i].exec(part);
+		
+		if (match) {
 		    portionDealer[i]( match, node );
 		}
-		continue;
+		
 	    }
-	    
-            match = exprMatches[i].exec(part);
-            
-            if (match) {
-                portionDealer[i]( match, node );
-            }
             
         }
         
@@ -68,7 +72,7 @@ var satisfy = (function(){
             temp.appendChild( node.cloneNode(true) );
         }
         
-        return clone(temp.childNodes); // clone?
+        return clone(temp.childNodes); 
         
     }
     
@@ -145,11 +149,11 @@ var satisfy = (function(){
         
         return elWrapper.childNodes;
         
-    };
+    }
     
     if (window.jQuery !== undefined && jQuery.fn) {
         jQuery.fn.satisfy = function() {
-            return $(satisfy(this.selector));
+            return this.pushStack(satisfy(this.selector));
         };
     }
     
