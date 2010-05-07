@@ -107,6 +107,10 @@ var satisfy = (function(){
     }
     
     function satisfy(selector) {
+		
+		if (selector in satisfy.cache) {
+			return satisfy.cache[selector].cloneNode(true).childNodes;
+		}
         
         var selectorParts = [],
             fragment = document.createDocumentFragment(),
@@ -148,10 +152,15 @@ var satisfy = (function(){
 		}
 		
 		fragment.appendChild(children);
+		
+		satisfy.cache[selector] = fragment.cloneNode(true);
         
         return fragment.childNodes;
         
     }
+	
+	satisfy.cache = {};
+	satisfy.create = create;
     
     if (window.jQuery !== undefined && jQuery.fn) {
 		
