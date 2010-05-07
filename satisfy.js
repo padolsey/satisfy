@@ -6,7 +6,7 @@
  *    - http://www.opensource.org/licenses/mit-license.php
  *    - http://www.gnu.org/copyleft/gpl.html
  * -------------------------------------------------------
- * Version: 0.2
+ * Version: 0.3
  * -------------------------------------------------------
  * (most) Regular Expressions are Copyright (c) John Resig,
  * from the Sizzle Selector Engine.
@@ -15,14 +15,16 @@
 var satisfy = (function(){
     
     var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^[\]]*\]|['"][^'"]*['"]|[^[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?/g,
-        exprMatches = {
+        exprRegex = {
             ID: /#((?:[\w\u00c0-\uFFFF_-]|\\.)+)/,
             CLASS: /\.((?:[\w\u00c0-\uFFFF_-]|\\.)+)/,
             NAME: /\[name=['"]*((?:[\w\u00c0-\uFFFF_-]|\\.)+)['"]*\]/,
             ATTR: /\[\s*((?:[\w\u00c0-\uFFFF_-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/g,
-            TAG: /^((?:[\w\u00c0-\uFFFF\*_-]|\\.)+)/
+            TAG: /^((?:[\w\u00c0-\uFFFF\*_-]|\\.)+)/,
+			CLONE: /\:(\d+)(?=$|[:[])/,
+			COMBINATOR: /^[>~+]$/
         },
-        portionDealer = {
+        exprCallback = {
             ID: function(match, node) {
                 node.id = match[1];
             },
@@ -33,8 +35,8 @@ var satisfy = (function(){
                 node.name = match[1];
             },
             ATTR: function(match, node) {
-                if ( 'innerHTML' === match[1] ) {
-                    node[match[1]] = match[4];
+                if ( /^(?:inner)?html$/i.test(match[1]) ) {
+                    node.innerHTML = match[4];
                 } else {
                     node.setAttribute( match[1], match[4] );
                 }
@@ -43,118 +45,120 @@ var satisfy = (function(){
     
     function create(part, n) {
         
-        var tag = exprMatches.TAG.exec(part),
+        var tag = exprRegex.TAG.exec(part),
             node = document.createElement( tag && tag[1] !== '*' ? tag[1] : 'div' ),
-            match, i, temp = document.createElement('div');
+			fragment = document.createDocumentFragment(),
+            match, expr, regex, callback;
         
-        for (i in portionDealer) {
+        for (expr in exprCallback) {
+			
+			regex = exprRegex[expr];
+			callback = exprCallback[expr];
 	    
-	    if (!portionDealer.hasOwnProperty || portionDealer.hasOwnProperty(i)) {
-            
-		if (exprMatches[i].global) {
-		    while ( (match = exprMatches[i].exec(part)) !== null ) {
-			portionDealer[i]( match, node );
-		    }
-		    continue;
-		}
-		
-		match = exprMatches[i].exec(part);
-		
-		if (match) {
-		    portionDealer[i]( match, node );
-		}
-		
-	    }
+			if (exprCallback.hasOwnProperty(expr)) {
+				
+				if (regex.global) {
+					
+					while ( (match = regex.exec(part)) !== null ) {
+						callback( match, node );
+					}
+					
+					continue;
+					
+				}
+				
+				if (match = regex.exec(part)) {
+					callback( match, node );
+				}
+			
+			}
             
         }
         
         while (n--) {
-            temp.appendChild( node.cloneNode(true) );
+            fragment.appendChild( node.cloneNode(true) );
         }
         
-        return clone(temp.childNodes); 
+        return fragment; 
         
-    }
-    
-    function clone(nodes) {
-        
-        var ret = [],
-            len = nodes.length,
-            i = 0;
-            
-        for ( ; i < len; ++i ) {
-            ret[i] = nodes[i].cloneNode(true);
-        }
-        
-        return ret;
     }
     
     function multiAppend(parents, children) {
+		
+		parents = parents.childNodes;
         
         var pLen = parents.length,
-            cLen = children.length,
-            pIndex = 0,
-            cIndex = 0,
-            frag = document.createDocumentFragment(),
-            clonedChildCollection = [],
-            ccc = 0,
+            i = -1,
             parent;
         
-        for ( ; pIndex < pLen; ++pIndex ) {
+        while ( ++i < pLen ) {
             
-            parent = parents[pIndex];
+            parent = parents[i];
             
             if (parent.nodeName.toLowerCase() === 'table') {
                 /* IE requires table to have tbody */
                 parent.appendChild(parent = document.createElement('tbody'));
             }
             
-            for ( cIndex = 0; cIndex < cLen; ++cIndex ) {
-                parent.appendChild(
-                    clonedChildCollection[ccc++] = children[cIndex].cloneNode(true)
-                );
-            }
+			parent.appendChild(children.cloneNode(true));
             
         }
-        
-        return clonedChildCollection;
         
     }
     
     function satisfy(selector) {
         
         var selectorParts = [],
-            elWrapper = document.createElement('div'),
-            curParents = [elWrapper],
-            curChilren = [],
+            fragment = document.createDocumentFragment(),
+			children,
+			prevChildren,
             curSelector,
-            nClones = 1;
+            nClones = 1,
+			isSibling = false;
         
-	while ( (m = chunker.exec(selector)) !== null ) {
-            
-            curSelector = m[1];
-            
-            if (/^[>~+]$/.test(curSelector)) {
-                continue;
-            }
-	    
-            nClones = /\:(\d+)$/.test(curSelector) ? +curSelector.match(/\:(\d+)$/)[1] : nClones;
-            
-            curParents = multiAppend(
-                curParents,
-                curChildren = create(curSelector, nClones)
-            );
-            
-	}
+		while ( (m = chunker.exec(selector)) !== null ) {
+			selectorParts.push(m[1]);
+		}
+		
+		// We're going in reverse
+		while (curSelector = selectorParts.pop()) {
+			
+			if (exprRegex.COMBINATOR.test(curSelector)) {
+				isSibling = curSelector === '~' || curSelector === '+';
+				continue;
+			}
+			
+			// Number of clones must be an int >= 1
+			nClones = ~~(curSelector.match(exprRegex.CLONE)||[,1])[1];
+			
+			prevChildren = children;
+			children = create(curSelector, nClones);
+			
+			if (prevChildren) {
+				
+				if (isSibling) {
+					children.appendChild(prevChildren);
+					isSibling = false;
+				} else {
+					multiAppend(children, prevChildren);
+				}
+				
+			}
+			
+		}
+		
+		fragment.appendChild(children);
         
-        return elWrapper.childNodes;
+        return fragment.childNodes;
         
     }
     
     if (window.jQuery !== undefined && jQuery.fn) {
-        jQuery.fn.satisfy = function() {
-            return this.pushStack(satisfy(this.selector));
+		
+        jQuery.satisfy = function(selector) {
+            return jQuery(satisfy(selector));
         };
+		
     }
     
     return satisfy;

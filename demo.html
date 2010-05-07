@@ -18,10 +18,10 @@
         <script>
         
             /* TESTING TABLE */
-            jQuery('table tr:5 td[innerHTML="aaa"]:3').satisfy().appendTo('body');
+            jQuery.satisfy('table tr:5 td[innerHTML="aaa"]:3').appendTo('body');
             
             /* TESTING <UL> */
-            jQuery('div:3 ul:2 li[innerHTML="List item"]:3').satisfy().appendTo('body');
+            jQuery.satisfy('div:3 ul:2 li[innerHTML="List item"]:3').appendTo('body');
             
             /* WITHOUT JQUERY */
             document.body.appendChild( satisfy('div em strong[innerHTML="Sans-jQuery!!!"]')[0] );
