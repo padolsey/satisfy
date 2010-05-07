@@ -1,41 +1,58 @@
-Satisfy that selector!
---
+# Satisfy that selector!
 
-***Satisfy*** is a development-only <del>jQuery plugin</del>**\*** that you can use to quickly generate HTML for testing/debugging. The idea is that you provide a CSS selector and then the plugin will "satisfy" it by generating an HTML structure in accordance with that selector.
+***Satisfy*** is a stand-alone (no dependencies) JavaScript function for generating HTML from CSS selectors. It's incredibly simple.
 
-**\*** - Version 0.2 has no dependencies. If jQuery is laoded then it will be available as a jQuery plugin (like before) otherwise it will work under the `satisfy()` name - this function returns an array of DOM elements.
+This:
 
-For example:
-
-    jQuery('div a').satisfy(); // jQuery
-    satisfy('div a'); // sans-jQuery
-
-This would return the following HTML structure:
+    satisfy('div a');
+    
+Returns the following DOM structure:
 
     <div>
         <a></a>
     </div>
 
-Then, as usual, you can append it to the body (or any element) like this:
+You can use attribute selectors and a numerical psuedo-class to manipulate the produced structure further:
 
-    jQuery('div a').satisfy().appendTo('body');
+    satisfy('ul li:5 span[innerHTML="item"]');
     
-It only works with "normal" selectors. **It ignores combinators (+|~|>) and pseudo-classes (:pseudo)**.
-
-It does work with type-selectors though! - 
-
-    jQuery('ul li a[href="http://google.com"]').satisfy();
-
-It also supports one custom pseudo-expression - a colon and number following any portion of a selector - this number signifies how many elements of this type you need:
-
-    jQuery('ul li:5 span[innerHTML="link"]').satisfy();
-    
-This would produce the following HTML:
+And that would produce this:
 
     <ul>
-        <li><span>link</span></li>
-        <li><span>link</span></li>
-        <li><span>link</span></li>
-        <li><span>link</span></li>
-        <li><span>link</span></li>
+        <li><span>item</span></li>
+        <li><span>item</span></li>
+        <li><span>item</span></li>
+        <li><span>item</span></li>
+        <li><span>item</span></li>
     </ul>
+    
+And sibling combinators (note: `~` and `+` do the same thing in this context):
+
+    staisfy('div span + a');
+    
+Output:
+
+    <div>
+        <span></span>
+        <a></a>
+    </div>
+    
+**Note: `satisfy()` returns a NodeList containing the elements you want. It's not a *real* array.**
+
+### jQuery
+
+If you're using jQuery then you can use ***Satisfy*** like so:
+
+    jQuery.satisfy('div a:5').prependTo('body');
+    
+`jQuery.satisfy` returns a jQuery instance containing all of the elements produced from whatever selector you pass to it. This makes it possible to use any of jQuery's methods... So, instead of:
+
+    jQuery('<div><a/></div>').appendTo(foo);
+    
+... you can do:
+
+    jQuery.satisfy('div a').appendTo(foo);
+
+### Improvements in 0.3
+
+I re-wrote most of the code in 0.3. The mechanism now used for creating elements is mostly fragment-based and the selector is processed in reverse.
