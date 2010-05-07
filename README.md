@@ -39,6 +39,23 @@ Output:
     
 **Note: `satisfy()` returns a NodeList containing the elements you want. It's not a *real* array.**
 
+### Other minor features
+
+You can set a boolean property with a no-value attribute expression (Thanks to [Kangax](http://twitter.com/kangax/status/13569875690)):
+
+    satisfy('input[type=checkbox][checked]');
+    satisfy('audio[autoplay]');
+    
+You can also set an element's innerHTML like so:
+
+    satisfy('div a[innerHTML=blah]');
+    // or:
+    satisfy('div a[html=blah]);
+    
+It's also possible to set multiple classes:
+
+    satisfy('a.b.c.d'); // => <a class="b c d"></a>
+
 ### jQuery
 
 If you're using jQuery then you can use ***Satisfy*** like so:
