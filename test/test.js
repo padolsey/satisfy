@@ -11,12 +11,49 @@ function create(html) {
 
 function compareNodes(node1, node2) {
     
-    return node1 && node2 &&
-            node1.nodeType === node2.nodeType &&
-            node1.nodeName === node2.nodeName &&
-            node1.id === node2.id &&
-            node1.className === node2.className &&
-            node1.innerHTML === node2.innerHTML;
+    if (!node1 || !node2) {
+        return false;
+    }
+    
+    for (var i in node1) {
+        try {
+            // Do a fuzzy check to make sure properties are similar
+            if (!/outerHTML|innerHTML|parentNode/.test(i) && String(node1[i]) !== String(node2[i])) {
+                console.log(i, node1[i], node2[i]);
+                return false;
+            }
+        } catch(e) {}
+    }
+    
+    var aNode = node1.firstChild,
+        bNode = node2.firstChild;
+        
+    if (aNode && bNode) {
+        do {
+            
+            if (!compareNodes(aNode, bNode)) {
+                console.log(aNode, bNode, 'aaa');
+                return false;
+            }
+            
+            aNode = aNode.nextSibling;
+            bNode = bNode.nextSibling;
+            
+            if (!!aNode === !!bNode) {
+                // They both either exist or do not exist
+                if (aNode) continue;
+                else break;
+            } else {
+                return false;
+            }
+            
+        } while(true);
+    } else if (!!aNode !== !!bNode) {
+        
+        return false;
+    }
+    
+    return true;
             
 }
 

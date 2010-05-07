@@ -43,9 +43,9 @@ var satisfy = (function(){
             ATTR: function(match, node) {
                 
                 var attr = match[1],
-                    val = match[4];
+                    val = match[4] || true;
                 
-                if ( (attr in attrMap) || attr === 'innerHTML' ) {
+                if ( attrMap.hasOwnProperty(attr) || attr === 'innerHTML' || val === true ) {
                     node[attrMap[attr] || attr] = val;
                 } else {
                     node.setAttribute( attr, val );
