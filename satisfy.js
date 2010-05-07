@@ -17,29 +17,40 @@ var satisfy = (function(){
     var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^[\]]*\]|['"][^'"]*['"]|[^[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?/g,
         exprRegex = {
             ID: /#((?:[\w\u00c0-\uFFFF_-]|\\.)+)/,
-            CLASS: /\.((?:[\w\u00c0-\uFFFF_-]|\\.)+)/,
+            CLASS: /\.((?:[\w\u00c0-\uFFFF_-]|\\.)+)(?![^[\]]+])/g,
             NAME: /\[name=['"]*((?:[\w\u00c0-\uFFFF_-]|\\.)+)['"]*\]/,
             ATTR: /\[\s*((?:[\w\u00c0-\uFFFF_-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/g,
             TAG: /^((?:[\w\u00c0-\uFFFF\*_-]|\\.)+)/,
             CLONE: /\:(\d+)(?=$|[:[])/,
             COMBINATOR: /^[>~+]$/
         },
+        attrMap = {
+            'for': 'htmlFor',
+            'class': 'className',
+            'html': 'innerHTML'
+        },
         exprCallback = {
             ID: function(match, node) {
                 node.id = match[1];
             },
             CLASS: function(match, node) {
-                node.className += ' ' + match[1];
+                var cls = node.className.replace(/^\s+$/,'');
+                node.className = cls ? cls + ' ' + match[1] : match[1];
             },
             NAME: function(match, node) {
                 node.name = match[1];
             },
             ATTR: function(match, node) {
-                if ( /^(?:inner)?html$/i.test(match[1]) ) {
-                    node.innerHTML = match[4];
+                
+                var attr = match[1],
+                    val = match[4];
+                
+                if ( (attr in attrMap) || attr === 'innerHTML' ) {
+                    node[attrMap[attr] || attr] = val;
                 } else {
-                    node.setAttribute( match[1], match[4] );
+                    node.setAttribute( attr, val );
                 }
+                
             }
         };
     
