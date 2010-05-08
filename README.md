@@ -46,7 +46,7 @@ You can set a boolean property with a no-value attribute expression (Thanks to [
     satisfy('input[type=checkbox][checked]');
     satisfy('audio[autoplay]');
     
-You can also set an element's innerHTML like so:
+You can also set an element's `innerHTML` like so:
 
     satisfy('div a[innerHTML=blah]');
     // or:
