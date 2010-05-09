@@ -12,7 +12,7 @@
  * from the Sizzle Selector Engine.
  */
 
-var satisfy = (function(){
+(function(){
     
     var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^[\]]*\]|['"][^'"]*['"]|[^[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?/g,
         exprRegex = {
@@ -24,6 +24,7 @@ var satisfy = (function(){
             CLONE: /\:(\d+)(?=$|[:[])/,
             COMBINATOR: /^[>~+]$/
         },
+        doc = document,
         attrMap = {
             'for': 'htmlFor',
             'class': 'className',
@@ -57,8 +58,8 @@ var satisfy = (function(){
     function create(part, n) {
         
         var tag = exprRegex.TAG.exec(part),
-            node = document.createElement( tag && tag[1] !== '*' ? tag[1] : 'div' ),
-            fragment = document.createDocumentFragment(),
+            node = doc.createElement( tag && tag[1] !== '*' ? tag[1] : 'div' ),
+            fragment = doc.createDocumentFragment(),
             match, expr, regex, callback;
         
         for (expr in exprCallback) {
@@ -108,7 +109,7 @@ var satisfy = (function(){
             
             if (parent.nodeName.toLowerCase() === 'table') {
                 /* IE requires table to have tbody */
-                parent.appendChild(parent = document.createElement('tbody'));
+                parent.appendChild(parent = doc.createElement('tbody'));
             }
             
             parent.appendChild(children.cloneNode(true));
@@ -124,7 +125,7 @@ var satisfy = (function(){
         }
         
         var selectorParts = [],
-            fragment = document.createDocumentFragment(),
+            fragment = doc.createDocumentFragment(),
             children,
             prevChildren,
             curSelector,
@@ -172,15 +173,14 @@ var satisfy = (function(){
     
     satisfy.cache = {};
     satisfy.create = create;
+    window['satisfy'] = satisfy;
     
-    if (window.jQuery !== undefined && jQuery.fn) {
+    if (window['jQuery'] !== undefined && jQuery['fn']) {
         
-        jQuery.satisfy = function(selector) {
+        jQuery['satisfy'] = function(selector) {
             return jQuery(satisfy(selector));
         };
         
     }
-    
-    return satisfy;
     
 })();
