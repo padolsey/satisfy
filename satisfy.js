@@ -25,11 +25,13 @@
             COMBINATOR: /^[>~+]$/
         },
         doc = document,
+        cache = {},
         attrMap = {
             'for': 'htmlFor',
             'class': 'className',
             'html': 'innerHTML'
         },
+        callbackTypes = ['ID','CLASS','NAME','ATTR'],
         exprCallback = {
             ID: function(match, node) {
                 node.id = match[1];
@@ -46,7 +48,7 @@
                 var attr = match[1],
                     val = match[4] || true;
                 
-                if ( attrMap.hasOwnProperty(attr) || attr === 'innerHTML' || val === true ) {
+                if ( val === true || attr === 'innerHTML' || attrMap.hasOwnProperty(attr) ) {
                     node[attrMap[attr] || attr] = val;
                 } else {
                     node.setAttribute( attr, val );
@@ -60,29 +62,26 @@
         var tag = exprRegex.TAG.exec(part),
             node = doc.createElement( tag && tag[1] !== '*' ? tag[1] : 'div' ),
             fragment = doc.createDocumentFragment(),
-            match, expr, regex, callback;
-        
-        for (expr in exprCallback) {
+            c = callbackTypes.length,
+            match, regex, callback;
             
-            regex = exprRegex[expr];
-            callback = exprCallback[expr];
-        
-            if (exprCallback.hasOwnProperty(expr)) {
+        while (c--) {
+            
+            regex = exprRegex[callbackTypes[c]];
+            callback = exprCallback[callbackTypes[c]];
                 
-                if (regex.global) {
-                    
-                    while ( (match = regex.exec(part)) !== null ) {
-                        callback( match, node );
-                    }
-                    
-                    continue;
-                    
-                }
+            if (regex.global) {
                 
-                if (match = regex.exec(part)) {
+                while ( (match = regex.exec(part)) !== null ) {
                     callback( match, node );
                 }
+                
+                continue;
+                
+            }
             
+            if (match = regex.exec(part)) {
+                callback( match, node );
             }
             
         }
@@ -99,11 +98,10 @@
         
         parents = parents.childNodes;
         
-        var pLen = parents.length,
-            i = -1,
+        var i = parents.length,
             parent;
         
-        while ( ++i < pLen ) {
+        while ( i-- ) {
             
             parent = parents[i];
             
@@ -120,8 +118,8 @@
     
     function satisfy(selector) {
         
-        if (selector in satisfy.cache) {
-            return satisfy.cache[selector].cloneNode(true).childNodes;
+        if (selector in cache) {
+            return cache[selector].cloneNode(true).childNodes;
         }
         
         var selectorParts = [],
@@ -130,14 +128,19 @@
             prevChildren,
             curSelector,
             nClones = 1,
-            isSibling = false;
+            nParts = 0,
+            isSibling = false,
+            cloneMatch;
         
         while ( (m = chunker.exec(selector)) !== null ) {
+            ++nParts;
             selectorParts.push(m[1]);
         }
         
         // We're going in reverse
-        while (curSelector = selectorParts.pop()) {
+        while (nParts--) {
+            
+            curSelector = selectorParts[nParts];
             
             if (exprRegex.COMBINATOR.test(curSelector)) {
                 isSibling = curSelector === '~' || curSelector === '+';
@@ -145,7 +148,7 @@
             }
             
             // Number of clones must be an int >= 1
-            nClones = ~~(curSelector.match(exprRegex.CLONE)||[,1])[1];
+            nClones = (cloneMatch = curSelector.match(exprRegex.CLONE)) ? ~~cloneMatch[1] : 1;
             
             prevChildren = children;
             children = create(curSelector, nClones);
@@ -165,14 +168,13 @@
         
         fragment.appendChild(children);
         
-        satisfy.cache[selector] = fragment.cloneNode(true);
+        cache[selector] = fragment.cloneNode(true);
         
         return fragment.childNodes;
         
     }
     
-    satisfy.cache = {};
-    satisfy.create = create;
+    satisfy.cache = cache;
     window['satisfy'] = satisfy;
     
     if (window['jQuery'] !== undefined && jQuery['fn']) {
