@@ -26,19 +26,6 @@
             /* WITHOUT JQUERY */
             document.body.appendChild( satisfy('div em strong[innerHTML="Sans-jQuery!!!"]')[0] );
             
-            
-            setTimeout(function(){
-                var n = +new Date, l = 200;
-                while (l--) jQuery.satisfy('div li:5 a[html=boo]');
-                alert(+new Date - n);
-            }, 1000000000);
-            
-            setTimeout(function(){
-                var n = +new Date, l = 200;
-                while (l--) jQuery('<div><li><a>boo</a></li><li><a>boo</a></li><li><a>boo</a></li><li><a>boo</a></li><li><a>boo</a></li></div>');
-                alert(+new Date - n);
-            }, 2000000000);
-            
         </script>
         
     </body>
