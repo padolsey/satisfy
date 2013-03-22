@@ -3,7 +3,10 @@
   "description": "Satisfy is a stand-alone JavaScript module for generating HTML from CSS selectors. Please read the readme for examples.",
   "version": "0.3.0",
   "homepage": "https://github.com/padolsey/satisfy",
-  "author": "jamespadolsey@gmail.com",
+  "author": {
+    "name": "James Padolsey",
+    "url": "http://james.padolsey.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/padolsey/satisfy.git"
@@ -21,7 +24,7 @@
   "contributors": [
     {
       "name": "James Padolsey",
-      "email": "jamespadolsey@gmail.com"
+      "url": "http://james.padolsey.com"
     },
     {
       "name": "Nathan Kleyn",
