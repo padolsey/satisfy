@@ -1,0 +1,41 @@
+{
+  "name": "satisfy.js",
+  "description": "Satisfy is a stand-alone JavaScript module for generating HTML from CSS selectors. Please read the readme for examples.",
+  "version": "0.3.0",
+  "homepage": "https://github.com/padolsey/satisfy",
+  "author": "jamespadolsey@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/padolsey/satisfy.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    },
+    {
+      "type": "GPL",
+      "url": "http://www.gnu.org/copyleft/gpl.html"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "James Padolsey",
+      "email": "jamespadolsey@gmail.com"
+    },
+    {
+      "name": "Nathan Kleyn",
+      "email": "nathan@nathankleyn.com"
+    }
+  ],
+  "main": "satisfy.js",
+  "keywords": [
+    "dom",
+    "selector",
+    "css",
+    "html",
+    "amd",
+    "requirejs",
+    "jquery"
+  ]
+}
