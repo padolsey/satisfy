@@ -1,0 +1,2 @@
+closure < satisfy.js > satisfy.min.js
+gzip < satisfy.min.js > satisfy.min.js.gz
