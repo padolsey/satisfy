@@ -153,7 +153,8 @@
             nClones = 1,
             nParts = 0,
             isSibling = false,
-            cloneMatch;
+            cloneMatch,
+            m;
 
         while ( (m = chunker.exec(selector)) !== null ) {
             ++nParts;
