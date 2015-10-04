@@ -25,12 +25,12 @@
 
     // <script>
     } else {
-        window['satisfy'] = satisfy;
+        window.satisfy = satisfy;
     }
 
-    if (window['jQuery'] !== undefined && jQuery['fn']) {
+    if (window.jQuery !== undefined && jQuery.fn) {
 
-        jQuery['satisfy'] = function(selector) {
+        jQuery.satisfy = function(selector) {
             return jQuery(satisfy(selector));
         };
 
@@ -103,7 +103,7 @@
 
             }
 
-            if (match = regex.exec(part)) {
+            if ((match = regex.exec(part))) {
                 callback( match, node );
             }
 
